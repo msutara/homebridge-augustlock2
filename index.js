@@ -293,20 +293,23 @@ AugustPlatform.prototype.identify = function (accessory, paired, callback) {
 AugustPlatform.prototype.login = function (callback) {
   var self = this;
 
-  // Log in
-  var authenticate = this.augustApi.authenticate('email:' + this.email, this.password);
-  authenticate.then(function (result) {
-    self.userId = result.body.userId;
-    self.platformLog("Logged in with ID " + self.userId);
-    self.securityToken = result.response.headers['x-august-access-token'];
+  if (self.securityToken) {
     self.postLogin(callback);
+  } else {
+    // Log in
+    var authenticate = this.augustApi.authenticate('email:' + this.email, this.password);
+    authenticate.then(function (result) {
+      self.userId = result.body.userId;
+      self.platformLog("Logged in with ID " + self.userId);
+      self.securityToken = result.response.headers['x-august-access-token'];
+      self.postLogin(callback);
 
-  }, function (error) {
-    self.platformLog(error);
-    callback(error, null);
+    }, function (error) {
+      self.platformLog(error);
+      callback(error, null);
 
-  });
-
+    });
+  }
 }
 
 AugustPlatform.prototype.postLogin = function (accessory, paired, getlocks, callback) {
